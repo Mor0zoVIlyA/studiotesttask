@@ -3,10 +3,11 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+
 }
 
 android {
-    namespace 'com.main_screen.presentation'
+    namespace 'com.second_layer_catalog.data'
     compileSdk 34
 
     defaultConfig {
@@ -29,34 +30,18 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    buildFeatures {
-        compose true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.1'
-    }
-    packaging {
-        resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
-        }
-    }
 }
 
 dependencies {
 
-    implementation platform(libs.compose.bom)
-    implementation libs.ui
-    implementation libs.ui.graphics
-    implementation libs.ui.tooling.preview
-    implementation libs.material3
-    implementation libs.androidx.navigation.runtime.ktx
+    implementation libs.core.ktx
+    implementation libs.appcompat
+    implementation libs.material
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.espresso.core
+    implementation(project(":networks"))
+    implementation(project(":second_layer_catalog:domain"))
     implementation "com.google.dagger:hilt-android:2.50"
     kapt "com.google.dagger:hilt-compiler:2.50"
-    implementation(project(":main_screen:domain"))
-    implementation(project(":main_screen:data"))
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-android:2.8.2'
-    implementation "io.coil-kt:coil-compose:2.5.0"
 }

@@ -1,4 +1,5 @@
 package com.main_screen.presentation
+
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
@@ -81,15 +83,17 @@ fun shimmerBrush(showShimmer: Boolean = true, targetValue: Float = 1000f): Brush
         )
     }
 }
+
 @Composable
-fun NetworkRequestTreeView(items: List<NetworkRequestItem>) {
+fun NetworkRequestTreeView(
+    items: List<NetworkRequestItem>,
+    onLastItemClick: (SubCategory) -> Unit,
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
         items(items) { item ->
-            TreeViewItem(item = item){
-                Log.d("TAG", "NetworkRequestTreeView: $it")
-            }
+            TreeViewItem(item = item, onLastItemClick = onLastItemClick)
         }
     }
 }
@@ -162,7 +166,7 @@ fun SubCategoryItem(item: SubCategory, depth: Int, onLastItemClick: (SubCategory
                 }
                 .padding(8.dp)
         ) {
-            if (item.subCategories.isNotEmpty()){
+            if (item.subCategories.isNotEmpty()) {
                 Icon(
                     imageVector = if (expanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
                     contentDescription = if (expanded) "Collapse" else "Expand"
@@ -210,7 +214,10 @@ fun SubCategoryItem(item: SubCategory, depth: Int, onLastItemClick: (SubCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(sampleData: List<NetworkRequestItem>) {
+fun MainScreen(
+    sampleData: List<NetworkRequestItem>,
+    navController: NavController
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -224,7 +231,10 @@ fun MainScreen(sampleData: List<NetworkRequestItem>) {
         },
         content = { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                NetworkRequestTreeView(items = sampleData)
+                NetworkRequestTreeView(items = sampleData){ item ->
+                    Log.d("TAG", "MainScreen: $item")
+                    navController.navigate("second_layer/${item.slug}/${item.title}")
+                }
             }
         }
     )
