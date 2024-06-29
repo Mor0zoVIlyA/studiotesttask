@@ -45,7 +45,11 @@ fun AppNavigation() {
         composable("main_screen") {
             val viewModel = hiltViewModel<MainViewModel>()
             val list by viewModel.dataList.collectAsState()
-            MainScreen(list, navController)
+            MainScreen(list,
+                navController,
+                viewModel::toggleExpanded,
+                viewModel::isExpanded
+            )
         }
         composable("second_layer/{slug}/{label}") { backStackEntry ->
             val slug = backStackEntry.arguments?.getString("slug") ?: ""

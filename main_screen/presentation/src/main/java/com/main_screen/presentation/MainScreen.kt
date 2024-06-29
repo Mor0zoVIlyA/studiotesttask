@@ -88,19 +88,31 @@ fun shimmerBrush(showShimmer: Boolean = true, targetValue: Float = 1000f): Brush
 fun NetworkRequestTreeView(
     items: List<NetworkRequestItem>,
     onLastItemClick: (SubCategory) -> Unit,
+    expend: (String, Int) -> Unit,
+    isExpended: (String, Int) -> Boolean
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
         items(items) { item ->
-            TreeViewItem(item = item, onLastItemClick = onLastItemClick)
+            TreeViewItem(
+                item = item,
+                onLastItemClick = onLastItemClick,
+                expend = expend,
+                isExpended = isExpended
+            )
         }
     }
 }
 
 @Composable
-fun TreeViewItem(item: NetworkRequestItem, depth: Int = 0, onLastItemClick: (SubCategory) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+fun TreeViewItem(item: NetworkRequestItem,
+                 depth: Int = 0,
+                 onLastItemClick: (SubCategory) -> Unit,
+                 expend: (String, Int) -> Unit,
+                 isExpended: (String, Int) -> Boolean
+) {
+    val expanded = isExpended(item.slug, depth)
 
     Column(
         modifier = Modifier
@@ -111,7 +123,7 @@ fun TreeViewItem(item: NetworkRequestItem, depth: Int = 0, onLastItemClick: (Sub
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .clickable { expend(item.slug, depth) }
                 .padding(8.dp)
         ) {
             Icon(
@@ -135,7 +147,7 @@ fun TreeViewItem(item: NetworkRequestItem, depth: Int = 0, onLastItemClick: (Sub
             AnimatedVisibility(visible = expanded) {
                 Column {
                     item.subCategories.forEach { subCategory ->
-                        SubCategoryItem(subCategory, depth + 1, onLastItemClick)
+                        SubCategoryItem(subCategory, depth + 1, onLastItemClick, expend, isExpended)
                     }
                 }
             }
@@ -144,8 +156,13 @@ fun TreeViewItem(item: NetworkRequestItem, depth: Int = 0, onLastItemClick: (Sub
 }
 
 @Composable
-fun SubCategoryItem(item: SubCategory, depth: Int, onLastItemClick: (SubCategory) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+fun SubCategoryItem(item: SubCategory,
+                    depth: Int,
+                    onLastItemClick: (SubCategory) -> Unit,
+                    expend: (String, Int) -> Unit,
+                    isExpended: (String, Int) -> Boolean
+) {
+    val expanded =  isExpended(item.slug, depth)
     val showShimmer = remember { mutableStateOf(true) }
 
     Column(
@@ -161,7 +178,7 @@ fun SubCategoryItem(item: SubCategory, depth: Int, onLastItemClick: (SubCategory
                     if (item.subCategories.isEmpty()) {
                         onLastItemClick(item)
                     } else {
-                        expanded = !expanded
+                        expend(item.slug, depth)
                     }
                 }
                 .padding(8.dp)
@@ -203,7 +220,7 @@ fun SubCategoryItem(item: SubCategory, depth: Int, onLastItemClick: (SubCategory
             AnimatedVisibility(visible = expanded) {
                 Column {
                     item.subCategories.forEach { subCategory ->
-                        SubCategoryItem(subCategory, depth + 1, onLastItemClick)
+                        SubCategoryItem(subCategory, depth + 1, onLastItemClick, expend, isExpended)
                     }
                 }
             }
@@ -216,7 +233,9 @@ fun SubCategoryItem(item: SubCategory, depth: Int, onLastItemClick: (SubCategory
 @Composable
 fun MainScreen(
     sampleData: List<NetworkRequestItem>,
-    navController: NavController
+    navController: NavController,
+    expend: (String, Int) -> Unit,
+    isExpended: (String, Int) -> Boolean
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -231,10 +250,19 @@ fun MainScreen(
         },
         content = { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                NetworkRequestTreeView(items = sampleData){ item ->
-                    Log.d("TAG", "MainScreen: $item")
-                    navController.navigate("second_layer/${item.slug}/${item.title}")
-                }
+                NetworkRequestTreeView(
+                    items = sampleData,
+                    expend = { slug, depth ->
+                        expend(slug, depth)
+                    },
+                    onLastItemClick = { item ->
+                        Log.d("TAG", "MainScreen: $item")
+                        navController.navigate("second_layer/${item.slug}/${item.title}")
+                    },
+                    isExpended = { slug, depth ->
+                        return@NetworkRequestTreeView isExpended(slug, depth)
+                    }
+                )
             }
         }
     )
