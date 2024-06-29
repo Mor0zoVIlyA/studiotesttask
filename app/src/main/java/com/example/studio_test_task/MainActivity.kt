@@ -16,6 +16,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.card.presentation.CardViewModel
+import com.card.presentation.ProductScreen
 import com.example.studio_test_task.ui.theme.StudiotesttaskTheme
 import com.main_screen.presentation.MainScreen
 import com.main_screen.presentation.MainViewModel
@@ -57,7 +59,12 @@ fun AppNavigation() {
         }
         composable("description/{slug}") { backStackEntry ->
             val slug = backStackEntry.arguments?.getString("slug") ?: ""
-
+            val cardViewModel =
+                hiltViewModel<CardViewModel, CardViewModel.ViewModelFactory> { viewModelFactory ->
+                    viewModelFactory.create(slug)
+                }
+            val state by cardViewModel.infoState.collectAsState()
+            ProductScreen(state, cardViewModel::shareInfo, navController)
         }
     }
 }
